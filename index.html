@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Discord Clone</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="chat-container">
+    <div id="sidebar">
+      <h3>Online Users</h3>
+      <ul id="onlineUsers"></ul>
+      <h3>Servers</h3>
+      <button onclick="createServer()">+ Create Server</button>
+      <ul id="servers"></ul>
+    </div>
+
+    <div id="chat">
+      <ul id="messages"></ul>
+      <div style="display:flex; margin-top:10px;">
+        <input id="messageInput" autocomplete="off" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
