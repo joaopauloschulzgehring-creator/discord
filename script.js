@@ -1,41 +1,65 @@
-const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const cors = require("cors");
+document.addEventListener("DOMContentLoaded", () => {
+  const avatars = ["avatars/1.png","avatars/2.png","avatars/3.png","avatars/4.png"];
 
-const app = express();
-app.use(cors());
+  let username = localStorage.getItem("username");
+  let myAvatar = localStorage.getItem("avatar");
 
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET","POST"]
+  if (!username) {
+    username = "User" + Math.floor(Math.random() * 1000);
+    myAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+    localStorage.setItem("username", username);
+    localStorage.setItem("avatar", myAvatar);
   }
-});
 
-let onlineUsers = {};
+  const socket = io("https://discord-clone-backend.onrender.com");
 
-io.on("connection", (socket) => {
-  console.log("A user connected");
+  socket.emit("join", { username, avatar: myAvatar });
 
-  socket.on("join", (data) => {
-    onlineUsers[socket.id] = { username: data.username, avatar: data.avatar };
-    io.emit("online users", Object.values(onlineUsers));
+  socket.on("online users", (users) => {
+    const ul = document.getElementById("onlineUsers");
+    ul.innerHTML = "";
+    users.forEach(u => {
+      const li = document.createElement("li");
+      const img = document.createElement("img");
+      img.src = u.avatar;
+      li.appendChild(img);
+      li.appendChild(document.createTextNode(u.username));
+      ul.appendChild(li);
+    });
   });
 
   socket.on("chat message", (data) => {
-    io.emit("chat message", data);
+    const messages = document.getElementById("messages");
+    const li = document.createElement("li");
+    const img = document.createElement("img");
+    img.src = data.avatar;
+    img.width = 40; img.height = 40;
+    const span = document.createElement("span");
+    span.textContent = `${data.username}: ${data.message}`;
+    li.appendChild(img);
+    li.appendChild(span);
+    messages.appendChild(li);
+    messages.scrollTop = messages.scrollHeight;
   });
 
-  socket.on("disconnect", () => {
-    delete onlineUsers[socket.id];
-    io.emit("online users", Object.values(onlineUsers));
-    console.log("A user disconnected");
-  });
-});
+  window.sendMessage = function() {
+    const input = document.getElementById("messageInput");
+    const message = input.value;
+    if (message.trim() === "") return;
+    socket.emit("chat message", { message, avatar: myAvatar, username });
+    input.value = "";
+  };
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  document.getElementById("messageInput").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
+
+  window.createServer = function() {
+    const serverName = prompt("Enter server name:");
+    if (!serverName) return;
+    const ul = document.getElementById("servers");
+    const li = document.createElement("li");
+    li.textContent = serverName;
+    ul.appendChild(li);
+  };
 });
