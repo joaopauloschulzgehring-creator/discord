@@ -1,4 +1,5 @@
-const socket = io("http://localhost:3000");
+// script.js
+const socket = io("https://discord-clone-backend.onrender.com");
 
 // avatars available in /avatars folder
 const avatars = ["avatars/1.png", "avatars/2.png", "avatars/3.png", "avatars/4.png"];
